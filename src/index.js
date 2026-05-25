@@ -10,6 +10,7 @@ const filmRoutes = require('./routes/film.routes');
 const seriesRoutes = require('./routes/series.routes');
 const eventRoutes = require('./routes/event.routes');
 const resourceRoutes = require('./routes/resource.routes');
+const ticketRoutes = require('./routes/ticket.routes');
 
 const uploadRoutes = require('./routes/upload.routes');
 const path = require('path');
@@ -34,6 +35,7 @@ app.use('/api/films', filmRoutes);
 app.use('/api/series', seriesRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/resources', resourceRoutes);
+app.use('/api/tickets', ticketRoutes);
 app.use('/api/upload', uploadRoutes);
 
 // Default route

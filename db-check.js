@@ -4,7 +4,8 @@ require('dotenv').config();
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(async () => {
-    const events = await Event.find();
-    console.log(JSON.stringify(events, null, 2));
+    const User = require('./src/models/User');
+    const users = await User.find();
+    console.log(JSON.stringify(users, null, 2));
     process.exit(0);
   });
