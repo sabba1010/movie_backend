@@ -56,3 +56,32 @@ exports.deleteFilm = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+exports.addReview = async (req, res) => {
+    try {
+        const { text, rating, user } = req.body;
+        const film = await Film.findById(req.params.id);
+        
+        if (!film) {
+            return res.status(404).json({ success: false, message: 'Film not found' });
+        }
+
+        const review = {
+            user: user || 'Guest User',
+            text,
+            rating: Number(rating)
+        };
+
+        film.reviews.unshift(review); // Add to beginning of array
+
+        // Update overall rating
+        const totalRating = film.reviews.reduce((acc, item) => item.rating + acc, 0);
+        film.rating = (totalRating / film.reviews.length).toFixed(1);
+
+        await film.save();
+
+        res.status(201).json({ success: true, data: film });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};

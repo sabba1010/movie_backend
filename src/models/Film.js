@@ -12,7 +12,13 @@ const filmSchema = new mongoose.Schema({
     purchases: { type: Number, default: 0 },
     thumbnail: { type: String, required: true },
     trailer: { type: String, required: true },
-    movieLink: { type: String, required: true }
+    movieLink: { type: String, required: true },
+    reviews: [{
+        user: { type: String, default: 'Guest User' },
+        text: { type: String, required: true },
+        rating: { type: Number, required: true },
+        date: { type: Date, default: Date.now }
+    }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Film', filmSchema);
