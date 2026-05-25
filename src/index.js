@@ -14,6 +14,7 @@ const ticketRoutes = require('./routes/ticket.routes');
 
 const uploadRoutes = require('./routes/upload.routes');
 const purchaseRoutes = require('./routes/purchase.routes');
+const settingRoutes = require('./routes/setting.routes');
 const path = require('path');
 
 const app = express();
@@ -38,6 +39,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/purchases', purchaseRoutes);
+app.use('/api/settings', settingRoutes);
 app.use('/api/upload', uploadRoutes);
 
 // Default route

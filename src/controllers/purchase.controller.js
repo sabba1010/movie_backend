@@ -12,14 +12,14 @@ exports.getAllPurchases = async (req, res) => {
 
 exports.createPurchase = async (req, res) => {
     try {
-        const { filmId, type, amount, user } = req.body;
+        const { filmId, type, amount, user, customExpiresAt } = req.body;
         
         const film = await Film.findById(filmId);
         if (!film) {
             return res.status(404).json({ success: false, message: 'Film not found' });
         }
 
-        const expiresAt = type === 'Rent' ? new Date(Date.now() + 48 * 60 * 60 * 1000) : null;
+        const expiresAt = type === 'Rent' ? (customExpiresAt ? new Date(customExpiresAt) : new Date(Date.now() + 48 * 60 * 60 * 1000)) : null;
 
         const purchase = await Purchase.create({
             user: user || "Guest User",
