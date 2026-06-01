@@ -12,6 +12,7 @@ const eventRoutes = require('./routes/event.routes');
 const resourceRoutes = require('./routes/resource.routes');
 const ticketRoutes = require('./routes/ticket.routes');
 const donationRoutes = require('./routes/donation.routes');
+const productRoutes = require('./routes/product.routes');
 
 const uploadRoutes = require('./routes/upload.routes');
 const purchaseRoutes = require('./routes/purchase.routes');
@@ -41,6 +42,7 @@ app.use('/api/resources', resourceRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/purchases', purchaseRoutes);
 app.use('/api/donations', donationRoutes);
+app.use('/api/products', productRoutes);
 app.use('/api/settings', settingRoutes);
 app.use('/api/upload', uploadRoutes);
 
