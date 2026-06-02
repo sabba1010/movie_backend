@@ -36,6 +36,10 @@ const ticketSchema = new mongoose.Schema({
     pricePaid: {
         type: String,
         default: '0'
+    },
+    category: {
+        type: String,
+        default: 'General'
     }
 }, {
     timestamps: true

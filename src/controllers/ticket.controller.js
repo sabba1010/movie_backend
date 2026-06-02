@@ -3,7 +3,7 @@ const Event = require('../models/Event');
 
 exports.createTicket = async (req, res) => {
     try {
-        const { eventId, city, showtimeId, price } = req.body;
+        const { eventId, city, showtimeId, price, categoryName, quantity } = req.body;
         
         // Find the event
         const event = await Event.findById(eventId);
@@ -11,25 +11,51 @@ exports.createTicket = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Event not found' });
         }
 
-        // Generate a unique ticket ID
-        const ticketId = `TKT-${Math.floor(1000 + Math.random() * 9000)}-${Date.now().toString().slice(-4)}`;
+        let ticketPrice = price || event.price;
+        let selectedCategory = null;
+        let numTickets = quantity ? parseInt(quantity) : 1;
 
-        // Create the ticket
-        const ticket = await Ticket.create({
-            user: req.user.id,
-            event: eventId,
-            city,
-            showtimeId,
-            ticketId,
-            pricePaid: price || event.price,
-            status: 'Paid'
-        });
+        if (categoryName && event.categories && event.categories.length > 0) {
+            selectedCategory = event.categories.find(c => c.name === categoryName);
+            if (!selectedCategory) {
+                return res.status(400).json({ success: false, message: 'Invalid category selected' });
+            }
+            if (selectedCategory.available < numTickets) {
+                return res.status(400).json({ success: false, message: 'Not enough tickets available in this category' });
+            }
+            ticketPrice = selectedCategory.price;
+        } else if (event.capacity && (event.capacity - event.ticketsSold) < numTickets) {
+            return res.status(400).json({ success: false, message: 'Not enough tickets available' });
+        }
 
-        // Increment tickets sold on the event
-        event.ticketsSold += 1;
+        const ticketsToCreate = [];
+
+        for (let i = 0; i < numTickets; i++) {
+            // Generate a unique ticket ID
+            const ticketId = `TKT-${Math.floor(1000 + Math.random() * 9000)}-${Date.now().toString().slice(-4)}-${i}`;
+            ticketsToCreate.push({
+                user: req.user.id,
+                event: eventId,
+                city,
+                showtimeId,
+                ticketId,
+                pricePaid: ticketPrice.toString(),
+                status: 'Paid',
+                category: categoryName || 'General'
+            });
+        }
+
+        // Create the tickets
+        const createdTickets = await Ticket.insertMany(ticketsToCreate);
+
+        // Increment tickets sold on the event and update category available
+        event.ticketsSold += numTickets;
+        if (selectedCategory) {
+            selectedCategory.available -= numTickets;
+        }
         await event.save();
 
-        res.status(201).json({ success: true, data: ticket });
+        res.status(201).json({ success: true, data: createdTickets[0] });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: error.message });

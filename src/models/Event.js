@@ -24,6 +24,12 @@ const cityScreeningSchema = new mongoose.Schema({
     showtimes: [showtimeSchema]
 });
 
+const categorySchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    price: { type: Number, required: true },
+    available: { type: Number, required: true }
+});
+
 const eventSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -68,7 +74,8 @@ const eventSchema = new mongoose.Schema({
         enum: ['Active', 'Draft', 'Past', 'Sold Out'],
         default: 'Active'
     },
-    cities: [cityScreeningSchema]
+    cities: [cityScreeningSchema],
+    categories: [categorySchema]
 }, {
     timestamps: true
 });
