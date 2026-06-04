@@ -6,6 +6,7 @@ const kidsSeriesSchema = new mongoose.Schema({
   topic: { type: String, required: true }, // Kindness, Courage, etc.
   image: { type: String }, // Banner Image URL/Path
   trailer: { type: String }, // Vimeo Link
+  audioLink: { type: String }, // Soundcloud/Audio URL
   status: { type: String, enum: ['Active', 'Draft', 'Pending'], default: 'Active' },
   subscribers: { type: Number, default: 0 },
 }, { timestamps: true });

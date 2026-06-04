@@ -20,6 +20,18 @@ exports.createSeries = async (req, res) => {
       await introEpisode.save();
     }
     
+    if (series.audioLink) {
+      const audioIntroEpisode = new KidsEpisode({
+        seriesId: series._id,
+        title: req.body.audioTitle || "Audio Introduction",
+        description: req.body.audioDescription || "Series Audio Introduction",
+        audioLink: series.audioLink,
+        image: series.image,
+        length: "00:00"
+      });
+      await audioIntroEpisode.save();
+    }
+    
     res.status(201).json(series);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -137,5 +149,32 @@ exports.updateKidsSettings = async (req, res) => {
     res.json(setting);
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+// DOWNLOADS
+exports.downloadSampleGuide = (req, res) => {
+  try {
+    const content = `KidsBibleFlix Connection Guide
+==============================
+Series: Friendly Forest
+Episode: 4
+
+BIBLE FOCUS:
+"But the fruit of the Spirit is love, joy, peace, forbearance, kindness..." - Galatians 5:22
+
+CONVERSATION STARTERS:
+• Why was Barnaby worried about sharing his supply?
+• Can you name a time when someone shared something with you?
+• How does God help us feel secure when we give?
+
+FAMILY ACTIVITY:
+This week, find one toy or item in your room that you can give away to someone who might need it more. Pray together before you give it away!`;
+
+    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Content-Disposition', 'attachment; filename="Friendly_Forest_Episode_4_Guide.txt"');
+    res.send(content);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to generate download' });
   }
 };

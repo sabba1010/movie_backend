@@ -19,4 +19,7 @@ router.delete('/episodes/:episodeId', kidsController.deleteEpisode);
 router.get('/settings', kidsController.getKidsSettings);
 router.post('/settings', kidsController.updateKidsSettings);
 
+// Downloads
+router.get('/sample-guide', kidsController.downloadSampleGuide);
+
 module.exports = router;
