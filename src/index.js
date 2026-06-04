@@ -15,6 +15,7 @@ const donationRoutes = require('./routes/donation.routes');
 const productRoutes = require('./routes/product.routes');
 const kidsRoutes = require('./routes/kidsRoutes');
 const newsletterRoutes = require('./routes/newsletter.routes');
+const contactRoutes = require('./routes/contact.routes');
 
 const uploadRoutes = require('./routes/upload.routes');
 const purchaseRoutes = require('./routes/purchase.routes');
@@ -50,6 +51,7 @@ app.use('/api/settings', settingRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/kids', kidsRoutes);
 app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Default route
 app.get('/', (req, res) => {
