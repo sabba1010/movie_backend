@@ -16,7 +16,10 @@ const storage = multer.diskStorage({
     cb(null, `${Date.now()}-${file.originalname}`);
   }
 });
-const upload = multer({ storage });
+const upload = multer({ 
+  storage,
+  limits: { fieldSize: 50 * 1024 * 1024 } // 50MB limit to allow large base64 JSON payloads
+});
 
 // GET all newsletters
 router.get('/', async (req, res) => {
