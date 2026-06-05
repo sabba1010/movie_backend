@@ -9,6 +9,7 @@ const kidsSeriesSchema = new mongoose.Schema({
   audioLink: { type: String }, // Soundcloud/Audio URL
   status: { type: String, enum: ['Active', 'Draft', 'Pending'], default: 'Active' },
   subscribers: { type: Number, default: 0 },
+  views: { type: Number, default: 0 },
 }, { timestamps: true });
 
 module.exports = mongoose.model('KidsSeries', kidsSeriesSchema);

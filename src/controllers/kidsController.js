@@ -41,11 +41,13 @@ exports.createSeries = async (req, res) => {
 exports.getAllSeries = async (req, res) => {
   try {
     const series = await KidsSeries.find().sort('-createdAt');
-    // Attach real episode counts
+    // Attach real episode counts and total views
     const enriched = await Promise.all(
       series.map(async (s) => {
-        const count = await KidsEpisode.countDocuments({ seriesId: s._id });
-        return { ...s.toObject(), episodeCount: count };
+        const episodes = await KidsEpisode.find({ seriesId: s._id }, 'views');
+        const count = episodes.length;
+        const totalViews = episodes.reduce((sum, ep) => sum + (ep.views || 0), 0);
+        return { ...s.toObject(), episodeCount: count, totalViews };
       })
     );
     res.json(enriched);
@@ -117,6 +119,71 @@ exports.deleteEpisode = async (req, res) => {
   try {
     await KidsEpisode.findByIdAndDelete(req.params.episodeId);
     res.json({ message: 'Episode deleted' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// VIEW TRACKING
+// Called when a user starts playing an episode (video or audio)
+exports.trackEpisodeView = async (req, res) => {
+  try {
+    const episode = await KidsEpisode.findByIdAndUpdate(
+      req.params.episodeId,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+    if (!episode) return res.status(404).json({ message: 'Episode not found' });
+
+    // Also increment the parent series view count
+    await KidsSeries.findByIdAndUpdate(episode.seriesId, { $inc: { views: 1 } });
+
+    res.json({ views: episode.views });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get total views for a series (sum of all episode views)
+exports.getSeriesViews = async (req, res) => {
+  try {
+    const episodes = await KidsEpisode.find({ seriesId: req.params.id }, 'views');
+    const totalViews = episodes.reduce((sum, ep) => sum + (ep.views || 0), 0);
+    res.json({ totalViews });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Analytics — for admin dashboard charts
+exports.getAnalytics = async (req, res) => {
+  try {
+    const allSeries = await KidsSeries.find({}, 'name views');
+    const allEpisodes = await KidsEpisode.find({}, 'title views seriesId').sort({ views: -1 }).limit(10);
+
+    // Enrich each series with summed episode views
+    const seriesAnalytics = await Promise.all(
+      allSeries.map(async (s) => {
+        const eps = await KidsEpisode.find({ seriesId: s._id }, 'views');
+        const totalViews = eps.reduce((sum, ep) => sum + (ep.views || 0), 0);
+        return { name: s.name, views: totalViews };
+      })
+    );
+    seriesAnalytics.sort((a, b) => b.views - a.views);
+
+    const totalViews = seriesAnalytics.reduce((sum, s) => sum + s.views, 0);
+
+    // Enrich episodes with series names
+    const seriesMap = {};
+    allSeries.forEach(s => { seriesMap[s._id.toString()] = s.name; });
+
+    const topEpisodes = allEpisodes.map(ep => ({
+      title: ep.title,
+      series: seriesMap[ep.seriesId?.toString()] || 'Unknown',
+      views: ep.views || 0
+    }));
+
+    res.json({ totalViews, seriesAnalytics, topEpisodes });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

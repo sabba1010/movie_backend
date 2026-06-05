@@ -15,6 +15,13 @@ router.post('/series/:seriesId/episodes', kidsController.createEpisode);
 router.put('/episodes/:episodeId', kidsController.updateEpisode);
 router.delete('/episodes/:episodeId', kidsController.deleteEpisode);
 
+// View Tracking
+router.post('/episodes/:episodeId/view', kidsController.trackEpisodeView);
+router.get('/series/:id/views', kidsController.getSeriesViews);
+
+// Analytics
+router.get('/analytics', kidsController.getAnalytics);
+
 // Settings
 router.get('/settings', kidsController.getKidsSettings);
 router.post('/settings', kidsController.updateKidsSettings);

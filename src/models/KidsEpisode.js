@@ -7,7 +7,8 @@ const kidsEpisodeSchema = new mongoose.Schema({
   vimeoLink: { type: String },
   audioLink: { type: String },
   length: { type: String, default: "00:00" },
-  img: { type: String }
+  img: { type: String },
+  views: { type: Number, default: 0 }
 }, { timestamps: true });
 
 module.exports = mongoose.model('KidsEpisode', kidsEpisodeSchema);
