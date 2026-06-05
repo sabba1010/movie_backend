@@ -4,18 +4,32 @@ const User = require('../models/User');
 // Create a new donation
 exports.createDonation = async (req, res) => {
     try {
-        const { firstName, lastName, email, amount, type } = req.body;
+        const { firstName, lastName, email, amount, type, campaignId, isLegacy } = req.body;
         
+        // Let's normalize type
+        const normalizedType = type === 'monthly' || type === 'Monthly' ? 'Monthly' : 
+                               type === 'annual' || type === 'Annual' ? 'Annual' : 'One-time';
+
         const newDonation = new Donation({
             firstName,
             lastName,
             email,
             amount: Number(amount),
-            type: type === 'monthly' ? 'Monthly' : 'One-time',
+            type: normalizedType,
+            campaignId: campaignId || null,
+            isLegacy: !!isLegacy,
             status: 'Completed' // Assuming successful processing for now
         });
 
         await newDonation.save();
+
+        if (campaignId) {
+            const Campaign = require('../models/Campaign');
+            await Campaign.findByIdAndUpdate(campaignId, {
+                $inc: { raisedAmount: Number(amount) }
+            });
+        }
+
         res.status(201).json({ success: true, data: newDonation });
     } catch (error) {
         console.error('Error creating donation:', error);

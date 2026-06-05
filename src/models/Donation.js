@@ -23,8 +23,17 @@ const donationSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['Monthly', 'One-time'],
+        enum: ['Monthly', 'Annual', 'One-time', 'monthly', 'one-time', 'annual'],
         required: true
+    },
+    campaignId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Campaign',
+        default: null
+    },
+    isLegacy: {
+        type: Boolean,
+        default: false
     },
     status: {
         type: String,

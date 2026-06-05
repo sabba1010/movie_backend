@@ -18,6 +18,9 @@ const newsletterRoutes = require('./routes/newsletter.routes');
 const contactRoutes = require('./routes/contact.routes');
 const heroSliderRoutes = require('./routes/filmSlider.routes');
 
+const campaignRoutes = require('./routes/campaign.routes');
+const adminMailRoutes = require('./routes/adminMail.routes');
+
 const uploadRoutes = require('./routes/upload.routes');
 const purchaseRoutes = require('./routes/purchase.routes');
 const settingRoutes = require('./routes/setting.routes');
@@ -54,6 +57,8 @@ app.use('/api/kids', kidsRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/hero-sliders', heroSliderRoutes);
+app.use('/api/campaigns', campaignRoutes);
+app.use('/api/admin-mail', adminMailRoutes);
 
 // Default route
 app.get('/', (req, res) => {
