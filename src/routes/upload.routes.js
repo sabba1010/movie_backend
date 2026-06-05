@@ -24,25 +24,25 @@ const storage = multer.diskStorage({
 
 const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
     fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) {
+        if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('audio/')) {
             cb(null, true);
         } else {
-            cb(new Error('Only images are allowed'));
+            cb(new Error('Only images and audio files are allowed'));
         }
     }
 });
 
 // Upload route
-router.post('/', upload.single('image'), (req, res) => {
+router.post('/', upload.single('file'), (req, res) => {
     if (!req.file) {
-        return res.status(400).json({ success: false, message: 'No image provided' });
+        return res.status(400).json({ success: false, message: 'No file provided' });
     }
     
-    // Return the URL where the image can be accessed
-    const imageUrl = `/uploads/${req.file.filename}`;
-    res.status(200).json({ success: true, url: imageUrl });
+    // Return the URL where the file can be accessed
+    const fileUrl = `/uploads/${req.file.filename}`;
+    res.status(200).json({ success: true, url: fileUrl });
 });
 
 module.exports = router;
