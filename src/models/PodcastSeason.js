@@ -12,7 +12,18 @@ const podcastSeasonSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ['Active', 'Draft', 'Completed'],
-    default: 'Active',
+    default: 'Draft',
+  },
+  resources: [{
+    title: String,
+    fileUrl: String,
+    size: String,
+  }],
+  spotifyUrl: String,
+  applePodcastsUrl: String,
+  isPremium: {
+    type: Boolean,
+    default: false
   },
   image: {
     type: String,

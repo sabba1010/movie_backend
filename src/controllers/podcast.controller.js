@@ -37,10 +37,14 @@ exports.createSeason = async (req, res) => {
 
 exports.updateSeason = async (req, res) => {
   try {
-    const { title, description, status, image } = req.body;
+    const allowedFields = ['title', 'description', 'status', 'image', 'resources', 'spotifyUrl', 'applePodcastsUrl', 'isPremium'];
+    const updateData = {};
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) updateData[field] = req.body[field];
+    }
     const season = await PodcastSeason.findByIdAndUpdate(
       req.params.id,
-      { title, description, status, image },
+      updateData,
       { new: true }
     );
     if (!season) return res.status(404).json({ success: false, message: 'Season not found' });
@@ -119,6 +123,28 @@ exports.deleteEpisode = async (req, res) => {
     await PodcastSeason.findByIdAndUpdate(episode.seasonId, { $inc: { episodesCount: -1 } });
 
     res.json({ success: true, message: 'Episode deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Use Lead model for resource downloads
+const Lead = require('../models/Lead');
+
+exports.downloadResource = async (req, res) => {
+  try {
+    const { email, fileUrl } = req.body;
+    if (email) {
+      const existing = await Lead.findOne({ email });
+      if (!existing) {
+        await Lead.create({ 
+          name: 'Podcast Listener', 
+          email: email,
+          resourceTitle: 'Podcast Resource Download' 
+        });
+      }
+    }
+    res.json({ success: true, url: fileUrl });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

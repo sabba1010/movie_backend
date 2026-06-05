@@ -7,6 +7,7 @@ const { protect } = require('../middlewares/auth.middleware');
 router.get('/seasons', podcastController.getAllSeasons);
 router.get('/seasons/:id', podcastController.getSeasonById);
 router.post('/episodes/:id/listen', podcastController.recordListen);
+router.post('/seasons/:id/resources/download', podcastController.downloadResource);
 
 // Protected Admin routes
 router.post('/seasons', protect, podcastController.createSeason);

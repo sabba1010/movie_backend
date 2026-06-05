@@ -26,10 +26,16 @@ const upload = multer({
     storage: storage,
     limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
     fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('audio/')) {
+        if (
+            file.mimetype.startsWith('image/') || 
+            file.mimetype.startsWith('audio/') || 
+            file.mimetype.startsWith('video/') || 
+            file.mimetype.startsWith('application/') || 
+            file.mimetype.startsWith('text/')
+        ) {
             cb(null, true);
         } else {
-            cb(new Error('Only images and audio files are allowed'));
+            cb(new Error('File type not supported'));
         }
     }
 });
