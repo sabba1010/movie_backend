@@ -1,32 +1,58 @@
 const express = require('express');
 const router = express.Router();
 const kidsController = require('../controllers/kidsController');
+const { protect, authorize, optionalAuth } = require('../middlewares/auth.middleware');
 
-// Series
-router.get('/series', kidsController.getAllSeries);
-router.post('/series', kidsController.createSeries);
-router.get('/series/:id', kidsController.getSeriesById);
-router.put('/series/:id', kidsController.updateSeries);
-router.delete('/series/:id', kidsController.deleteSeries);
+// ─── PUBLIC ROUTES ───────────────────────────────────────────────────────────
 
-// Episodes
-router.get('/series/:seriesId/episodes', kidsController.getEpisodesBySeries);
-router.post('/series/:seriesId/episodes', kidsController.createEpisode);
-router.put('/episodes/:episodeId', kidsController.updateEpisode);
-router.delete('/episodes/:episodeId', kidsController.deleteEpisode);
+// Series (public metadata — no media links exposed)
+router.get('/series', optionalAuth, kidsController.getAllSeries);
+router.get('/series/:id', optionalAuth, kidsController.getSeriesById);
 
-// View Tracking
+// Episodes (public — series metadata only, media links visible but access enforced on FE)
+router.get('/series/:seriesId/episodes', optionalAuth, kidsController.getEpisodesBySeries);
+
+// View Tracking (public so any play counts)
 router.post('/episodes/:episodeId/view', kidsController.trackEpisodeView);
 router.get('/series/:id/views', kidsController.getSeriesViews);
 
-// Analytics
-router.get('/analytics', kidsController.getAnalytics);
-
-// Settings
+// Settings / Plan Info
 router.get('/settings', kidsController.getKidsSettings);
-router.post('/settings', kidsController.updateKidsSettings);
+router.get('/plans', kidsController.getPlanSettings);
 
-// Downloads
+// Sample Guide Download
 router.get('/sample-guide', kidsController.downloadSampleGuide);
+
+// ─── PROTECTED USER ROUTES ───────────────────────────────────────────────────
+
+// Check if current user has Kids access
+router.get('/access', protect, kidsController.checkAccess);
+
+// Purchase / subscribe (called after payment success)
+router.post('/purchase', protect, kidsController.createPurchase);
+
+// ─── ADMIN ROUTES ────────────────────────────────────────────────────────────
+
+// Series CRUD (admin)
+router.post('/series', protect, authorize('admin'), kidsController.createSeries);
+router.put('/series/:id', protect, authorize('admin'), kidsController.updateSeries);
+router.delete('/series/:id', protect, authorize('admin'), kidsController.deleteSeries);
+
+// Episodes CRUD (admin)
+router.post('/series/:seriesId/episodes', protect, authorize('admin'), kidsController.createEpisode);
+router.put('/episodes/:episodeId', protect, authorize('admin'), kidsController.updateEpisode);
+router.delete('/episodes/:episodeId', protect, authorize('admin'), kidsController.deleteEpisode);
+
+// Analytics (admin)
+router.get('/analytics', protect, authorize('admin'), kidsController.getAnalytics);
+
+// Settings (admin)
+router.post('/settings', protect, authorize('admin'), kidsController.updateKidsSettings);
+router.post('/plans', protect, authorize('admin'), kidsController.updatePlanSettings);
+
+// Purchase management (admin)
+router.get('/purchases', protect, authorize('admin'), kidsController.getAllPurchases);
+router.post('/grant-access', protect, authorize('admin'), kidsController.grantAccess);
+router.delete('/purchases/:id', protect, authorize('admin'), kidsController.revokeAccess);
 
 module.exports = router;

@@ -25,7 +25,29 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['user', 'admin'],
         default: 'user',
-    }
+    },
+    // ─── KidsBibleFlix Access ───────────────────────────────
+    kidsAccess: {
+        type: Boolean,
+        default: false,
+    },
+    kidsAccessType: {
+        type: String,
+        enum: ['lifetime', 'monthly', 'yearly', null],
+        default: null,
+    },
+    kidsAccessGrantedAt: {
+        type: Date,
+        default: null,
+    },
+    kidsAccessExpiry: {
+        type: Date,
+        default: null, // null = never expires (lifetime)
+    },
+    kidsAccessSource: {
+        type: String,
+        default: null, // 'stripe', 'admin_grant', 'promo_code'
+    },
 }, { timestamps: true });
 
 // Encrypt password before saving
@@ -41,6 +63,13 @@ userSchema.pre('save', async function(next) {
 userSchema.methods.matchPassword = async function(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
+
+// Virtual: is access currently active?
+userSchema.virtual('kidsAccessActive').get(function() {
+    if (!this.kidsAccess) return false;
+    if (!this.kidsAccessExpiry) return true; // lifetime
+    return new Date() < this.kidsAccessExpiry;
+});
 
 const User = mongoose.model('User', userSchema);
 module.exports = User;
