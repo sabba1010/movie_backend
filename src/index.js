@@ -25,6 +25,7 @@ const uploadRoutes = require('./routes/upload.routes');
 const purchaseRoutes = require('./routes/purchase.routes');
 const settingRoutes = require('./routes/setting.routes');
 const podcastRoutes = require('./routes/podcast.routes');
+const prayerRoutes = require('./routes/prayer.routes');
 const path = require('path');
 
 const app = express();
@@ -61,6 +62,7 @@ app.use('/api/hero-sliders', heroSliderRoutes);
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/admin-mail', adminMailRoutes);
 app.use('/api/podcast', podcastRoutes);
+app.use('/api/prayer', prayerRoutes);
 
 // Default route
 app.get('/', (req, res) => {
