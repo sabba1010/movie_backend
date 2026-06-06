@@ -27,7 +27,8 @@ const cityScreeningSchema = new mongoose.Schema({
 const categorySchema = new mongoose.Schema({
     name: { type: String, required: true },
     price: { type: Number, required: true },
-    available: { type: Number, required: true }
+    available: { type: Number, required: true },
+    facilities: { type: String, default: '' }
 });
 
 const eventSchema = new mongoose.Schema({
