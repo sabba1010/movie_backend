@@ -44,7 +44,7 @@ exports.createSeries = async (req, res) => {
 exports.getAllSeries = async (req, res) => {
   try {
     const series = await KidsSeries.find().sort('-createdAt');
-    const hasAccess = req.user && req.user.kidsAccess;
+    const hasAccess = req.user && (req.user.kidsAccess || req.user.role === 'admin');
     const enriched = await Promise.all(
       series.map(async (s) => {
         const episodes = await KidsEpisode.find({ seriesId: s._id }, 'views');
@@ -68,7 +68,7 @@ exports.getSeriesById = async (req, res) => {
   try {
     const series = await KidsSeries.findById(req.params.id);
     if (!series) return res.status(404).json({ message: 'Series not found' });
-    const hasAccess = req.user && req.user.kidsAccess;
+    const hasAccess = req.user && (req.user.kidsAccess || req.user.role === 'admin');
     const obj = series.toObject();
     if (!hasAccess) {
       delete obj.trailer;
@@ -114,7 +114,7 @@ exports.createEpisode = async (req, res) => {
 exports.getEpisodesBySeries = async (req, res) => {
   try {
     const episodes = await KidsEpisode.find({ seriesId: req.params.seriesId }).sort('createdAt');
-    const hasAccess = req.user && req.user.kidsAccess;
+    const hasAccess = req.user && (req.user.kidsAccess || req.user.role === 'admin');
     if (!hasAccess) {
       const stripped = episodes.map(ep => {
         const obj = ep.toObject();
