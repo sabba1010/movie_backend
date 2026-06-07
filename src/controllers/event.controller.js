@@ -2,7 +2,13 @@ const Event = require('../models/Event');
 
 exports.getAllEvents = async (req, res) => {
     try {
-        const events = await Event.find().sort({ createdAt: -1 });
+        const events = await Event.find();
+        // Sort in memory to avoid MongoDB 32MB sort limit
+        events.sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateB - dateA;
+        });
         res.status(200).json({ success: true, count: events.length, data: events });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
