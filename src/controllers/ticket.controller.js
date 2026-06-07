@@ -1,9 +1,10 @@
 const Ticket = require('../models/Ticket');
 const Event = require('../models/Event');
+const PromoCode = require('../models/PromoCode');
 
 exports.createTicket = async (req, res) => {
     try {
-        const { eventId, city, showtimeId, price, categoryName, quantity } = req.body;
+        const { eventId, city, showtimeId, price, categoryName, quantity, promoCode } = req.body;
         
         // Find the event
         const event = await Event.findById(eventId);
@@ -23,9 +24,22 @@ exports.createTicket = async (req, res) => {
             if (selectedCategory.available < numTickets) {
                 return res.status(400).json({ success: false, message: 'Not enough tickets available in this category' });
             }
-            ticketPrice = selectedCategory.price;
-        } else if (event.capacity && (event.capacity - event.ticketsSold) < numTickets) {
-            return res.status(400).json({ success: false, message: 'Not enough tickets available' });
+            ticketPrice = parseFloat(selectedCategory.price) || 0;
+        } else {
+            ticketPrice = parseFloat(ticketPrice.toString().replace(/[^0-9.]/g, '')) || 0;
+            if (event.capacity && (event.capacity - event.ticketsSold) < numTickets) {
+                return res.status(400).json({ success: false, message: 'Not enough tickets available' });
+            }
+        }
+
+        let appliedPromo = null;
+        if (promoCode) {
+            appliedPromo = await PromoCode.findOne({ code: promoCode.toUpperCase() });
+            if (appliedPromo && appliedPromo.isActive && (appliedPromo.maxUses === 0 || appliedPromo.usedCount < appliedPromo.maxUses)) {
+                ticketPrice = ticketPrice - (ticketPrice * (appliedPromo.discountPercentage / 100));
+            } else {
+                return res.status(400).json({ success: false, message: 'Invalid or expired promo code' });
+            }
         }
 
         const ticketsToCreate = [];
@@ -54,6 +68,11 @@ exports.createTicket = async (req, res) => {
             selectedCategory.available -= numTickets;
         }
         await event.save();
+
+        if (appliedPromo) {
+            appliedPromo.usedCount += 1;
+            await appliedPromo.save();
+        }
 
         res.status(201).json({ success: true, data: createdTickets[0] });
     } catch (error) {

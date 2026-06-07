@@ -7,14 +7,14 @@ async function testBooking() {
         const token = jwt.sign({ id: '6a13c8a7f0f65fa3ee43a8d3' }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
         // 2. Get Events
-        const eventsRes = await fetch('https://movie-backend-drab.vercel.app/api/events');
+        const eventsRes = await fetch('http://localhost:5000/api/events');
         const eventsData = await eventsRes.json();
         console.log('Events:', eventsData.data.length);
         if (eventsData.data.length === 0) return;
 
         // 3. Book Ticket
         const eventId = eventsData.data[0]._id;
-        const bookRes = await fetch('https://movie-backend-drab.vercel.app/api/tickets', {
+        const bookRes = await fetch('http://localhost:5000/api/tickets', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
