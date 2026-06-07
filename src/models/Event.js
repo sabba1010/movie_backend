@@ -70,6 +70,10 @@ const eventSchema = new mongoose.Schema({
         type: String,
         default: 'no-photo.jpg'
     },
+    gallery: {
+        type: [String],
+        default: []
+    },
     status: {
         type: String,
         enum: ['Active', 'Draft', 'Past', 'Sold Out'],
