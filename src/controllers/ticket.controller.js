@@ -114,3 +114,37 @@ exports.checkInTicket = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+exports.updateTicketStatus = async (req, res) => {
+    try {
+        const { status } = req.body;
+        if (!['Paid', 'Pending', 'Refunded', 'Cancelled'].includes(status)) {
+            return res.status(400).json({ success: false, message: 'Invalid status' });
+        }
+        
+        const ticket = await Ticket.findById(req.params.id);
+        if (!ticket) {
+            return res.status(404).json({ success: false, message: 'Ticket not found' });
+        }
+
+        const oldStatus = ticket.status;
+        ticket.status = status;
+        await ticket.save();
+
+        if (oldStatus === 'Paid' && ['Cancelled', 'Refunded'].includes(status)) {
+            const event = await Event.findById(ticket.event);
+            if (event) {
+                event.ticketsSold = Math.max(0, event.ticketsSold - 1);
+                if (event.categories) {
+                    const cat = event.categories.find(c => c.name === ticket.category);
+                    if (cat) cat.available += 1;
+                }
+                await event.save();
+            }
+        }
+        
+        res.status(200).json({ success: true, data: ticket });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
