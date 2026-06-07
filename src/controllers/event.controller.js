@@ -62,3 +62,29 @@ exports.deleteEvent = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+exports.addEventReview = async (req, res) => {
+    try {
+        const { name, rating, comment } = req.body;
+        const event = await Event.findById(req.params.id);
+
+        if (!event) {
+            return res.status(404).json({ success: false, message: 'Event not found' });
+        }
+
+        const review = {
+            name,
+            rating: Number(rating),
+            comment
+        };
+
+        event.reviews.push(review);
+        event.numReviews = event.reviews.length;
+        event.averageRating = event.reviews.reduce((acc, item) => item.rating + acc, 0) / event.reviews.length;
+
+        await event.save();
+        res.status(201).json({ success: true, data: event });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};

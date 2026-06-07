@@ -31,6 +31,13 @@ const categorySchema = new mongoose.Schema({
     facilities: { type: String, default: '' }
 });
 
+const reviewSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    rating: { type: Number, required: true, min: 1, max: 5 },
+    comment: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+});
+
 const eventSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -80,7 +87,10 @@ const eventSchema = new mongoose.Schema({
         default: 'Active'
     },
     cities: [cityScreeningSchema],
-    categories: [categorySchema]
+    categories: [categorySchema],
+    reviews: [reviewSchema],
+    averageRating: { type: Number, default: 0 },
+    numReviews: { type: Number, default: 0 }
 }, {
     timestamps: true
 });
