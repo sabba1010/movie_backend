@@ -1,30 +1,16 @@
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const mongoose = require('mongoose');
+const { GridFSBucket } = require('mongodb');
 
 const router = express.Router();
 
-// Ensure uploads directory exists
-const uploadDir = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Multer config
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-});
+// Use memory storage for Vercel compatibility
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
+    limits: { fileSize: 4 * 1024 * 1024 }, // 4MB limit to stay under Vercel's 4.5MB payload limit
     fileFilter: (req, file, cb) => {
         if (
             file.mimetype.startsWith('image/') || 
@@ -40,15 +26,72 @@ const upload = multer({
     }
 });
 
+let gfsBucket;
+const initGridFS = () => {
+    if (mongoose.connection.db && !gfsBucket) {
+        gfsBucket = new GridFSBucket(mongoose.connection.db, {
+            bucketName: 'uploads'
+        });
+    }
+};
+
+if (mongoose.connection.readyState === 1) {
+    initGridFS();
+} else {
+    mongoose.connection.once('open', initGridFS);
+}
+
 // Upload route
 router.post('/', upload.single('file'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ success: false, message: 'No file provided' });
     }
     
-    // Return the URL where the file can be accessed
-    const fileUrl = `/uploads/${req.file.filename}`;
-    res.status(200).json({ success: true, url: fileUrl });
+    if (!gfsBucket) {
+        return res.status(500).json({ success: false, message: 'GridFS not initialized yet' });
+    }
+
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const filename = uniqueSuffix + '-' + req.file.originalname.replace(/\s+/g, '-');
+
+    // Create an upload stream to GridFS
+    const uploadStream = gfsBucket.openUploadStream(filename, {
+        contentType: req.file.mimetype
+    });
+
+    uploadStream.end(req.file.buffer);
+
+    uploadStream.on('finish', () => {
+        const fileUrl = `/api/upload/file/${filename}`;
+        res.status(200).json({ success: true, url: fileUrl });
+    });
+
+    uploadStream.on('error', (err) => {
+        res.status(500).json({ success: false, message: 'Error uploading file to GridFS' });
+    });
+});
+
+// GET route to retrieve a file from GridFS
+router.get('/file/:filename', async (req, res) => {
+    try {
+        if (!gfsBucket) {
+            return res.status(500).json({ success: false, message: 'GridFS not initialized yet' });
+        }
+
+        const files = await gfsBucket.find({ filename: req.params.filename }).toArray();
+        
+        if (!files || files.length === 0) {
+            return res.status(404).json({ success: false, message: 'File not found' });
+        }
+
+        const file = files[0];
+        res.set('Content-Type', file.contentType);
+        
+        const downloadStream = gfsBucket.openDownloadStreamByName(req.params.filename);
+        downloadStream.pipe(res);
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Error retrieving file' });
+    }
 });
 
 module.exports = router;
