@@ -90,7 +90,8 @@ const eventSchema = new mongoose.Schema({
     categories: [categorySchema],
     reviews: [reviewSchema],
     averageRating: { type: Number, default: 0 },
-    numReviews: { type: Number, default: 0 }
+    numReviews: { type: Number, default: 0 },
+    recapVideoUrl: { type: String, default: '' }
 }, {
     timestamps: true
 });
