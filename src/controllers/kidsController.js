@@ -43,6 +43,7 @@ exports.createSeries = async (req, res) => {
 
 exports.getAllSeries = async (req, res) => {
   try {
+    console.log("getAllSeries: starting");
     const series = await KidsSeries.find().sort('-createdAt');
     const hasAccess = req.user && (req.user.kidsAccess || req.user.role === 'admin');
     const enriched = await Promise.all(
@@ -60,6 +61,7 @@ exports.getAllSeries = async (req, res) => {
     );
     res.json(enriched);
   } catch (error) {
+    console.log("getAllSeries: err", error.message);
     res.status(500).json({ message: error.message });
   }
 };
