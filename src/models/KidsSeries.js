@@ -4,7 +4,7 @@ const kidsSeriesSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
   topic: { type: String, required: true }, // Kindness, Courage, etc.
-  contentType: { type: String, default: 'Live-action' }, // Live-action, Audio, Creation Case, OMS
+  contentType: { type: String, default: 'Creation Case' }, // Audio, Creation Case, OMS
   image: { type: String }, // Banner Image URL/Path
   trailer: { type: String }, // Vimeo Link
   audioLink: { type: String }, // Soundcloud/Audio URL
