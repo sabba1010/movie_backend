@@ -27,6 +27,7 @@ const settingRoutes = require('./routes/setting.routes');
 const podcastRoutes = require('./routes/podcast.routes');
 const prayerRoutes = require('./routes/prayer.routes');
 const promoCodeRoutes = require('./routes/promoCode.routes');
+const paymentRoutes = require('./routes/payment.routes');
 const path = require('path');
 
 const app = express();
@@ -65,6 +66,7 @@ app.use('/api/admin-mail', adminMailRoutes);
 app.use('/api/podcast', podcastRoutes);
 app.use('/api/prayer', prayerRoutes);
 app.use('/api/promocodes', promoCodeRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // Default route
 app.get('/', (req, res) => {

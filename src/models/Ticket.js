@@ -40,6 +40,10 @@ const ticketSchema = new mongoose.Schema({
     category: {
         type: String,
         default: 'General'
+    },
+    stripeSessionId: {
+        type: String,
+        default: null
     }
 }, {
     timestamps: true
