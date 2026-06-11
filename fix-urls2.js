@@ -7,7 +7,7 @@ function fixEventsFile() {
   if (!content.includes('const API_URL')) {
     content = content.replace(
       'import { useEffect } from "react";',
-      'import { useEffect } from "react";\n\nconst API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";\n'
+      'import { useEffect } from "react";\n\nconst API_URL = import.meta.env.VITE_API_URL || "https://movie-backend-drab.vercel.app";\n'
     );
   }
 
