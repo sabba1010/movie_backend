@@ -17,3 +17,4 @@ exports.updateSeries = async (req, res) => {
 exports.deleteSeries = async (req, res) => {
     res.status(200).json({ success: true, message: `Delete series ${req.params.id}` });
 };
+
