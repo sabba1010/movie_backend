@@ -4,7 +4,7 @@ let c = fs.readFileSync('c:/Users/Arifur Sajid/Downloads/All client/2000client f
 if (!c.includes('const API_URL = import.meta.env.VITE_API_URL')) {
     c = c.replace(
         'import { useState } from "react";\r\n',
-        'import { useState } from "react";\r\n\r\nconst API_URL = import.meta.env.VITE_API_URL || "https://movie-backend-drab.vercel.app";\r\n'
+        'import { useState } from "react";\r\n\r\nconst API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";\r\n'
     );
 }
 
