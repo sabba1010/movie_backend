@@ -1,12 +1,23 @@
 const PodcastSeason = require('../models/PodcastSeason');
+const PodcastPlatform = require('../models/PodcastPlatform');
 const PodcastEpisode = require('../models/PodcastEpisode');
+const Setting = require('../models/Setting');
+const { Resend } = require('resend');
+const resend = new Resend('re_7VuM3pJA_L8gB2ZiULvPw6dbXb1QY2ULg');
 
 exports.getAllSeasons = async (req, res) => {
   try {
     const seasons = await PodcastSeason.find().sort({ createdAt: -1 });
-    // Fetch episodes for each season to get the real count? Or just rely on episodesCount.
-    // We'll just fetch all seasons
     res.json({ success: true, data: seasons });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getAllEpisodes = async (req, res) => {
+  try {
+    const episodes = await PodcastEpisode.find().sort({ createdAt: -1 });
+    res.json({ success: true, data: episodes });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -145,6 +156,86 @@ exports.downloadResource = async (req, res) => {
       }
     }
     res.json({ success: true, url: fileUrl });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.submitForm = async (req, res) => {
+  try {
+    const { formType, parentName, parentEmail, childName, location, content, fileUrl } = req.body;
+    
+    const setting = await Setting.findOne({ key: 'podcast_banner' });
+    const toEmail = setting?.value?.submissionEmail || 'omimanmaybe@gmail.com';
+
+    let messageHtml = `
+      <h1>New Podcast Submission: ${formType}</h1>
+      <p><strong>Parent:</strong> ${parentName} (<a href="mailto:${parentEmail}">${parentEmail}</a>)</p>
+      <p><strong>Child:</strong> ${childName}</p>
+      <p><strong>Location:</strong> ${location}</p>
+    `;
+
+    if (content) {
+      messageHtml += `<p><strong>Content:</strong><br/>${content.replace(/\\n/g, '<br/>')}</p>`;
+    }
+    if (fileUrl) {
+      messageHtml += `<p><strong>File Attachment:</strong> <a href="${fileUrl}">Download / View File</a></p>`;
+    }
+
+    await resend.emails.send({
+      from: 'OMS Podcast <onboarding@resend.dev>',
+      to: toEmail,
+      replyTo: parentEmail,
+      subject: `New Podcast Submission: ${formType.toUpperCase()} - ${childName}`,
+      html: messageHtml
+    });
+
+    res.json({ success: true, message: 'Submission sent successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getPlatforms = async (req, res) => {
+  try {
+    const platforms = await PodcastPlatform.find().sort({ createdAt: 1 });
+    res.json({ success: true, data: platforms });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.createPlatform = async (req, res) => {
+  try {
+    const { name, url, iconUrl, color } = req.body;
+    const platform = new PodcastPlatform({ name, url, iconUrl, color });
+    await platform.save();
+    res.status(201).json({ success: true, data: platform });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+exports.updatePlatform = async (req, res) => {
+  try {
+    const { name, url, iconUrl, color } = req.body;
+    const platform = await PodcastPlatform.findByIdAndUpdate(
+      req.params.id,
+      { name, url, iconUrl, color },
+      { new: true }
+    );
+    if (!platform) return res.status(404).json({ success: false, message: 'Platform not found' });
+    res.json({ success: true, data: platform });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+exports.deletePlatform = async (req, res) => {
+  try {
+    const platform = await PodcastPlatform.findByIdAndDelete(req.params.id);
+    if (!platform) return res.status(404).json({ success: false, message: 'Platform not found' });
+    res.json({ success: true, message: 'Platform deleted' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
