@@ -66,7 +66,7 @@ router.post('/', async (req, res) => {
 
     await resend.emails.send({
       from: 'OMS Contact Form <onboarding@resend.dev>',
-      to: 'omimanmaybe@gmail.com', // Sending to the OMS team
+      to: 'leo@onemustardseed.com', // Sending to the OMS team
       replyTo: email, // This allows the OMS team to hit "Reply" and send directly to the user
       subject: `New OMS Inquiry: ${category} - ${firstName} ${lastName}`,
       html: htmlContent
